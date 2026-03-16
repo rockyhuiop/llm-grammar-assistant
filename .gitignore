@@ -36,4 +36,5 @@ coverage/
 *.lcov
 
 # Claude Code (keep local settings private)
-.claude/settings.local.json
+.claude/
+.specify/
