@@ -21,7 +21,7 @@ serde_json = "1.0"
 toml = "0.8"
 
 # OS credential storage
-keyring = "3.0"
+keyring = { version = "3.6", features = ["apple-native"] }
 
 # Terminal output
 colored = "2.1"
