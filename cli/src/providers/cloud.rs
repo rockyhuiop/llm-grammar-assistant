@@ -136,10 +136,13 @@ impl CloudLlmProvider {
             anyhow::bail!("OpenAI returned HTTP {status}: {body:.300}");
         }
 
-        let resp: serde_json::Value = response
-            .json()
+        let body = response
+            .text()
             .await
-            .context("Failed to parse OpenAI response")?;
+            .context("Failed to read OpenAI response body")?;
+
+        let resp: serde_json::Value = serde_json::from_str(&body)
+            .with_context(|| format!("Failed to parse OpenAI response as JSON: {body:.500}"))?;
 
         resp["choices"][0]["message"]["content"]
             .as_str()
@@ -149,7 +152,7 @@ impl CloudLlmProvider {
 
     async fn call_gemini(&self, text: &str) -> Result<String> {
         let url = format!(
-            "{}/models/{}/generateContent?key={}",
+            "{}/models/{}:generateContent?key={}",
             self.base_url, self.model, self.api_key
         );
 
@@ -206,10 +209,13 @@ impl CloudLlmProvider {
             anyhow::bail!("Gemini returned HTTP {status}: {body:.300}");
         }
 
-        let resp: serde_json::Value = response
-            .json()
+        let body = response
+            .text()
             .await
-            .context("Failed to parse Gemini response")?;
+            .context("Failed to read Gemini response body")?;
+
+        let resp: serde_json::Value = serde_json::from_str(&body)
+            .with_context(|| format!("Failed to parse Gemini response as JSON: {body:.500}"))?;
 
         resp["candidates"][0]["content"]["parts"][0]["text"]
             .as_str()

@@ -60,6 +60,19 @@ grammar-check fix document.txt --output fixed.txt
 grammar-check fix document.txt --in-place
 ```
 
+### Per-invocation overrides
+
+```bash
+# Use a different model for one check
+grammar-check check document.txt --model gpt-4o
+
+# Point at an OpenAI-compatible API for one run
+grammar-check check document.txt --base-url https://my-proxy.example.com/v1
+
+# Both flags work on fix too
+grammar-check fix document.txt --model gemini-2.0-flash --in-place
+```
+
 ### Configuration
 
 ```bash
@@ -69,6 +82,10 @@ grammar-check config --mode cloud --provider openai
 
 # Store API key in OS keychain
 grammar-check config --set-api-key
+
+# Set model and custom base URL (persisted)
+grammar-check config --set-model gpt-4o
+grammar-check config --set-base-url https://my-proxy.example.com/v1
 
 # Show current settings
 grammar-check config --show
