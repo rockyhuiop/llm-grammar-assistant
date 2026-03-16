@@ -196,6 +196,58 @@ export function Popup() {
               </button>
             </div>
           </div>
+
+          {/* Model override */}
+          <div style={S.section}>
+            <label style={S.label} htmlFor="cloudModel">
+              Model (optional)
+            </label>
+            <input
+              id="cloudModel"
+              type="text"
+              placeholder={
+                (config.cloudProvider ?? 'gemini') === 'openai'
+                  ? 'gpt-4o-mini'
+                  : 'gemini-2.0-flash'
+              }
+              value={config.cloudModel ?? ''}
+              onChange={(e) => {
+                const val = e.target.value;
+                setConfig((c) => {
+                  const next = { ...c };
+                  if (val) { next.cloudModel = val; } else { delete next.cloudModel; }
+                  return next;
+                });
+              }}
+              style={{ ...S.input, width: '100%', boxSizing: 'border-box' }}
+            />
+          </div>
+
+          {/* Base URL override */}
+          <div style={S.section}>
+            <label style={S.label} htmlFor="cloudBaseUrl">
+              Base URL (optional)
+            </label>
+            <input
+              id="cloudBaseUrl"
+              type="text"
+              placeholder={
+                (config.cloudProvider ?? 'gemini') === 'openai'
+                  ? 'https://api.openai.com/v1'
+                  : 'https://generativelanguage.googleapis.com/v1beta'
+              }
+              value={config.cloudBaseUrl ?? ''}
+              onChange={(e) => {
+                const val = e.target.value;
+                setConfig((c) => {
+                  const next = { ...c };
+                  if (val) { next.cloudBaseUrl = val; } else { delete next.cloudBaseUrl; }
+                  return next;
+                });
+              }}
+              style={{ ...S.input, width: '100%', boxSizing: 'border-box' }}
+            />
+          </div>
         </>
       )}
 

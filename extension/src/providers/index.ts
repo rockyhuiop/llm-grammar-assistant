@@ -32,6 +32,11 @@ export async function createProvider(): Promise<Provider> {
     throw new Error('No API key configured. Open extension settings to add one.');
   }
 
-  return new CloudProvider(config.cloudProvider ?? 'gemini', apiKey);
+  return new CloudProvider(
+    config.cloudProvider ?? 'gemini',
+    apiKey,
+    config.cloudModel,
+    config.cloudBaseUrl,
+  );
 }
 

@@ -34,12 +34,17 @@ export class CloudProvider implements Provider {
   readonly modelName: string;
   private readonly apiKey: string;
   private readonly type: 'openai' | 'gemini';
+  private readonly baseUrl: string;
 
-  constructor(type: 'openai' | 'gemini', apiKey: string, model?: string) {
+  constructor(type: 'openai' | 'gemini', apiKey: string, model?: string, baseUrl?: string) {
     this.type = type;
     this.apiKey = apiKey;
     this.providerName = type;
     this.modelName = model ?? (type === 'openai' ? 'gpt-4o-mini' : 'gemini-2.0-flash');
+    const defaultBase = type === 'openai'
+      ? 'https://api.openai.com/v1'
+      : 'https://generativelanguage.googleapis.com/v1beta';
+    this.baseUrl = (baseUrl ?? defaultBase).replace(/\/+$/, '');
   }
 
   async check(text: string): Promise<Edit[]> {
@@ -68,7 +73,7 @@ export class CloudProvider implements Provider {
   }
 
   private async callOpenAI(text: string): Promise<Edit[]> {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -102,7 +107,7 @@ export class CloudProvider implements Provider {
   }
 
   private async callGemini(text: string): Promise<Edit[]> {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.modelName}/generateContent?key=${this.apiKey}`;
+    const url = `${this.baseUrl}/models/${this.modelName}:generateContent?key=${this.apiKey}`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

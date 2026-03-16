@@ -6,6 +6,10 @@
 export interface ExtensionConfig {
   mode: 'local' | 'cloud';
   cloudProvider?: 'gemini' | 'openai';
+  /** Custom model name for cloud provider */
+  cloudModel?: string;
+  /** Custom base URL for cloud provider API */
+  cloudBaseUrl?: string;
   /** Local Ollama host, defaults to http://localhost:11434 */
   localHost?: string;
   /** Encrypted API key (via Web Crypto API) */
