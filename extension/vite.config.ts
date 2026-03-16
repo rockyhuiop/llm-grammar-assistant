@@ -1,9 +1,18 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
+import { copyFileSync, mkdirSync, existsSync } from 'fs';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: 'copy-extension-assets',
+      writeBundle() {
+        copyFileSync('manifest.json', 'dist/manifest.json');
+      },
+    },
+  ],
   build: {
     outDir: 'dist',
     emptyOutDir: true,
