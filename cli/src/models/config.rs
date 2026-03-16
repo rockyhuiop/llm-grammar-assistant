@@ -65,6 +65,9 @@ pub struct CloudConfig {
     /// Provider-specific model name. Uses provider default if None.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub model_name: Option<String>,
+    /// Custom base URL for the provider API. Uses provider default if None.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub base_url: Option<String>,
 }
 
 /// Supported cloud LLM providers.
@@ -88,6 +91,13 @@ impl CloudProvider {
         match self {
             CloudProvider::Gemini => "gemini-2.0-flash",
             CloudProvider::OpenAI => "gpt-4o-mini",
+        }
+    }
+
+    pub fn default_base_url(self) -> &'static str {
+        match self {
+            CloudProvider::Gemini => "https://generativelanguage.googleapis.com/v1beta",
+            CloudProvider::OpenAI => "https://api.openai.com/v1",
         }
     }
 

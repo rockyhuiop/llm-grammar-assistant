@@ -16,15 +16,17 @@ pub struct CloudLlmProvider {
     provider: CloudProvider,
     model: String,
     api_key: String,
+    base_url: String,
     client: reqwest::Client,
 }
 
 impl CloudLlmProvider {
-    pub fn new(provider: CloudProvider, model: String, api_key: String) -> Self {
+    pub fn new(provider: CloudProvider, model: String, api_key: String, base_url: String) -> Self {
         Self {
             provider,
             model,
             api_key,
+            base_url: base_url.trim_end_matches('/').to_string(),
             client: reqwest::Client::new(),
         }
     }
@@ -76,7 +78,7 @@ impl CloudLlmProvider {
     }
 
     async fn call_openai(&self, text: &str) -> Result<String> {
-        let url = "https://api.openai.com/v1/chat/completions";
+        let url = format!("{}/chat/completions", self.base_url);
         let schema = serde_json::json!({
             "type": "object",
             "required": ["edits"],
@@ -147,8 +149,8 @@ impl CloudLlmProvider {
 
     async fn call_gemini(&self, text: &str) -> Result<String> {
         let url = format!(
-            "https://generativelanguage.googleapis.com/v1beta/models/{}/generateContent?key={}",
-            self.model, self.api_key
+            "{}/models/{}/generateContent?key={}",
+            self.base_url, self.model, self.api_key
         );
 
         let schema = serde_json::json!({

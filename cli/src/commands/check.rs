@@ -88,7 +88,11 @@ pub async fn check_text(raw_text: &str, config: &Configuration) -> Result<CheckR
                 .model_name
                 .clone()
                 .unwrap_or_else(|| cloud.provider.default_model().to_string());
-            let provider = CloudLlmProvider::new(cloud.provider, model, api_key);
+            let base_url = cloud
+                .base_url
+                .clone()
+                .unwrap_or_else(|| cloud.provider.default_base_url().to_string());
+            let provider = CloudLlmProvider::new(cloud.provider, model, api_key, base_url);
             run_check_with_provider(&provider, &text, config, start).await
         }
     }

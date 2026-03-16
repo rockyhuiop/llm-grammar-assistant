@@ -42,6 +42,12 @@ enum Commands {
         /// Output format.
         #[arg(long, value_enum, default_value = "human")]
         format: OutputFormat,
+        /// Override the model for this invocation.
+        #[arg(long)]
+        model: Option<String>,
+        /// Override the base URL for this invocation (cloud mode only).
+        #[arg(long)]
+        base_url: Option<String>,
     },
     /// Apply all grammar corrections to text.
     ///
@@ -61,6 +67,12 @@ enum Commands {
         /// Modify the input file directly (requires FILE argument).
         #[arg(long)]
         in_place: bool,
+        /// Override the model for this invocation.
+        #[arg(long)]
+        model: Option<String>,
+        /// Override the base URL for this invocation (cloud mode only).
+        #[arg(long)]
+        base_url: Option<String>,
     },
     /// Manage configuration (mode, provider, API keys).
     ///
@@ -84,16 +96,20 @@ async fn main() -> Result<()> {
         Commands::Config { action } => {
             grammar_check::commands::config::run(action)?;
         }
-        Commands::Check { file, format } => {
-            let config = load_config_or_prompt().await?;
+        Commands::Check { file, format, model, base_url } => {
+            let mut config = load_config_or_prompt().await?;
+            apply_cli_overrides(&mut config, model.as_deref(), base_url.as_deref());
             grammar_check::commands::check::run(file.as_ref(), *format, &config).await?;
         }
         Commands::Fix {
             file,
             output,
             in_place,
+            model,
+            base_url,
         } => {
-            let config = load_config_or_prompt().await?;
+            let mut config = load_config_or_prompt().await?;
+            apply_cli_overrides(&mut config, model.as_deref(), base_url.as_deref());
             grammar_check::commands::fix::run(
                 file.as_ref(),
                 output.as_ref(),
@@ -175,6 +191,7 @@ async fn load_config_or_prompt() -> Result<Configuration> {
                         cloud: Some(CloudConfig {
                             provider,
                             model_name: None,
+                            base_url: None,
                         }),
                     }
                 }
@@ -195,6 +212,26 @@ async fn load_config_or_prompt() -> Result<Configuration> {
             }
 
             Ok(config)
+        }
+    }
+}
+
+/// Applies per-invocation CLI overrides to the loaded configuration.
+fn apply_cli_overrides(config: &mut Configuration, model: Option<&str>, base_url: Option<&str>) {
+    if model.is_none() && base_url.is_none() {
+        return;
+    }
+    if let Some(cloud) = config.cloud.as_mut() {
+        if let Some(m) = model {
+            cloud.model_name = Some(m.to_string());
+        }
+        if let Some(u) = base_url {
+            cloud.base_url = Some(u.trim_end_matches('/').to_string());
+        }
+    }
+    if let Some(local) = config.local.as_mut() {
+        if let Some(m) = model {
+            local.model_name = m.to_string();
         }
     }
 }

@@ -33,6 +33,18 @@ pub enum ConfigAction {
     /// Remove the stored API key from the OS keychain.
     #[command(name = "--delete-api-key", alias = "delete-api-key")]
     DeleteApiKey,
+    /// Set the model name for the current cloud provider.
+    #[command(name = "--set-model", alias = "set-model")]
+    SetModel {
+        /// The model name (e.g., "gpt-4o", "gemini-2.0-flash").
+        model: String,
+    },
+    /// Set a custom base URL for the cloud provider API.
+    #[command(name = "--set-base-url", alias = "set-base-url")]
+    SetBaseUrl {
+        /// The base URL (e.g., "https://api.openai.com/v1").
+        url: String,
+    },
     /// Display current configuration.
     #[command(name = "--show", alias = "show")]
     Show,
@@ -57,6 +69,8 @@ pub fn run(action: &ConfigAction) -> Result<()> {
         ConfigAction::SetProvider { provider } => set_provider(*provider),
         ConfigAction::SetApiKey { key } => set_api_key(key.as_deref()),
         ConfigAction::DeleteApiKey => delete_api_key_cmd(),
+        ConfigAction::SetModel { model } => set_model(model),
+        ConfigAction::SetBaseUrl { url } => set_base_url(url),
         ConfigAction::Show => show_config(),
     }
 }
@@ -75,6 +89,7 @@ fn set_mode(mode: ModeArg) -> Result<()> {
                 config.cloud = Some(CloudConfig {
                     provider: CloudProvider::Gemini,
                     model_name: None,
+                    base_url: None,
                 });
             }
             OperatingMode::Cloud
@@ -98,6 +113,7 @@ fn set_provider(provider: ProviderArg) -> Result<()> {
     config.cloud = Some(CloudConfig {
         provider: cloud_provider,
         model_name: None,
+        base_url: None,
     });
     config.mode = OperatingMode::Cloud;
     config.save()?;
@@ -159,6 +175,28 @@ fn delete_api_key_cmd() -> Result<()> {
     Ok(())
 }
 
+fn set_model(model: &str) -> Result<()> {
+    let mut config = load_or_default()?;
+    let cloud = config.cloud.as_mut().context(
+        "No cloud provider configured. Set one with: grammar-check config --provider <gemini|openai>",
+    )?;
+    cloud.model_name = Some(model.to_string());
+    config.save()?;
+    println!("{} Model set to {}", "✓".green(), model.bold());
+    Ok(())
+}
+
+fn set_base_url(url: &str) -> Result<()> {
+    let mut config = load_or_default()?;
+    let cloud = config.cloud.as_mut().context(
+        "No cloud provider configured. Set one with: grammar-check config --provider <gemini|openai>",
+    )?;
+    cloud.base_url = Some(url.trim_end_matches('/').to_string());
+    config.save()?;
+    println!("{} Base URL set to {}", "✓".green(), url.bold());
+    Ok(())
+}
+
 fn show_config() -> Result<()> {
     let path = Configuration::config_path()?;
     match Configuration::load()? {
@@ -187,6 +225,9 @@ fn show_config() -> Result<()> {
                         .as_deref()
                         .unwrap_or(cloud.provider.default_model())
                 );
+                if let Some(url) = &cloud.base_url {
+                    println!("    base_url: {}", url);
+                }
                 // Check if API key exists
                 let has_key = crate::services::credentials::get_api_key(
                     cloud.provider.keyring_service(),
