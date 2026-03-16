@@ -1,0 +1,39 @@
+# Rust
+target/
+debug/
+release/
+*.rs.bk
+*.rlib
+*.prof*
+Cargo.lock
+
+# Node.js/TypeScript
+node_modules/
+dist/
+build/
+*.log
+.pnpm-debug.log*
+
+# Environment and secrets
+.env*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Extension build artifacts
+extension/dist/
+
+# Test coverage
+coverage/
+*.lcov
+
+# Claude Code (keep local settings private)
+.claude/settings.local.json

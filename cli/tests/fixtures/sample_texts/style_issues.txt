@@ -1,0 +1,3 @@
+The implementation is very, very good and it works in a very efficient manner.
+Due to the fact that the system is slow, we need to make improvements.
+At this point in time, we should begin to start the process.
